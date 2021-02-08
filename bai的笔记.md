@@ -117,15 +117,52 @@ Java 所有的异常都有一个共同的祖先**Throwable** , Throwable 有2个
 
 
 
-### 4.4 spring boot
-
-
-
-@RestController  默认是单例模式，如果需要使用多例，使用 @Scope("prototype") 
-
+> @RestController  默认是单例模式，如果需要使用多例，使用 @Scope("prototype") 
+>
 > 单例模式的controller ,使用成员属性不安全，属于会共享
 >
 > spring boot web 模块是集成了 spring mvc 
+
+### 4.4 spring boot
+
+#### 4.4.1 核心注解
+
+spring boot 核心注解 **@SpringBootApplication** 包括三个注解组成
+
+```java
+@SpringBootConfiguration
+@EnableAutoConfiguration
+@ComponentScan
+```
+
+@SpringBootConfiguration = @Configuration 
+
+@EnableAutoConfiguration 包括 2个注解
+
+```Java
+@AutoConfigurationPackage
+@Import(AutoConfigurationImportSelector.class)
+```
+
+@AutoConfigurationPackage  作用是配置启动类所在的包
+
+AutoConfigurationImportSelector 自动配置选择器，加载需要导入的配置
+
+#### 4.4.1 自动装配原理
+
+spring boot 提倡阅定大于配置， 默认的加载配置文件
+
+```java
+application.yml
+
+application.yaml
+
+application.properties
+```
+
+配置文件中指定配置属性通过 **@ConfigurationProperties(prefix = "spring.redis")** 注入，再加载到自动配置文件中
+
+spring boot 自动装配原理：https://zhuanlan.zhihu.com/p/95217578
 
 
 
@@ -491,7 +528,7 @@ $$
 
 当数据项 N 一定的情况下， m 越大， 高度 h 越小。数据项 m  = 磁盘块的大小 / 数据项的大小，磁盘块的大小也就是一个数据页的大小，是固定的，如果数据项占的空间越小，数据项的数量越多，树的高度越低。这就是为什么每个数据项，即索引字段要尽量的小，比如 int 占 4 个字节，要比bigint 8 个字节少一半。这也是为什么 b+ 树要求把真实的数据放到叶子节点而不是内层节点，一旦放到内存节点，磁盘块的数据项会大幅下降，导致树增高。当数据项等于1 时将退化成线性表。
 
-	2. 当 b+ 树的数据项是复合的数据结构，比如 (name,age,sex) 的时候，b+树是按照从左到右的顺序建立搜索树的，比如当 **（zhangsan, 20, 男）**这样的数据来检索时， b+ 树会优先比较 name 来确定下一步的搜索方向。如果 name 相同 再依次比较 age 与 sex , 最后得到检索的数据。但当 **（20，男）**这样的没有name 的数据来的时候， b+ 树就不知道下一步该查找哪个节点，因为建立搜索树的时候 name 就是第一个比较因子，即索引失效。比如当（**zhangsan,男）**这样的数据来检索时，b+ 树可以用 name 来指定搜索方向，但下一个字段 age 缺失，即只有 name 索引生效，该性质即**最左匹配特性**
+2. 当 b+ 树的数据项是复合的数据结构，比如 (name,age,sex) 的时候，b+树是按照从左到右的顺序建立搜索树的，比如当 **（zhangsan, 20, 男）**这样的数据来检索时， b+ 树会优先比较 name 来确定下一步的搜索方向。如果 name 相同 再依次比较 age 与 sex , 最后得到检索的数据。但当 **（20，男）**这样的没有name 的数据来的时候， b+ 树就不知道下一步该查找哪个节点，因为建立搜索树的时候 name 就是第一个比较因子，即索引失效。比如当（**zhangsan,男）**这样的数据来检索时，b+ 树可以用 name 来指定搜索方向，但下一个字段 age 缺失，即只有 name 索引生效，该性质即**最左匹配特性**
 
 
 
