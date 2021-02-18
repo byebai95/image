@@ -60,9 +60,17 @@ Java 所有的异常都有一个共同的祖先**Throwable** , Throwable 有2个
 
 异常参考博文：https://blog.csdn.net/qq_29229567/article/details/80773970
 
-### 1.4 jvm
+### 1.4 JVM
 
+JVM( Java Virtual Machine ，Java虚拟机 )
 
+![img](https://pic1.zhimg.com/v2-bf438382f881edb81d49a2ddb8888d68_b.png)
+
+### 1.5 JMM
+
+JMM( Java Memory Model , Java 内存模型 )
+
+https://zhuanlan.zhihu.com/p/29881777
 
 ### 1.5 jdk 特性
 
@@ -87,11 +95,13 @@ Java 所有的异常都有一个共同的祖先**Throwable** , Throwable 有2个
 
 ### 2.1 多线程
 
-#### 	2.1.1 锁
+#### 	 锁
 
-#### 	2.1.2 并发容器
+#### 	并发容器
 
-#### 	2.1.3 原子类
+#### 	 原子类
+
+#### ThreadLocal 了解
 
 ### 2.2 Aop
 
@@ -108,6 +118,10 @@ Java 所有的异常都有一个共同的祖先**Throwable** , Throwable 有2个
 ## 四、框架
 
 ### 4.1 spring 
+
+Bean 的生命周期
+
+
 
 ### 4.2 mybatis
 
@@ -184,11 +198,27 @@ spring cloud 是一套规范，具体是实现包括 2种，netflix 实现 与 a
 
 ### 4.6 shiro
 
-### 4.7 Jpa
+### 4.8 Rpc 原理
 
+rpc ( Remote Procedure Call ,远程过程调用)， RPC 是一种通信协议，一个服务调用另一个服务就像在调用本地服务一样，而不用关注网络通信的细节 。
 
+实现 rpc 的技术与架构： 
 
+> 采用 Socket 通信、Java 动态代理、反射、序列化
 
+**序列化**即将对象转换为二进制流的过程
+
+**反序列化**即将二进制流转换为对象的过程
+
+rpc 需要关注的三个技术点：
+
+1. 服务寻址
+2. 数据流的序列化与反序列化
+3. 网络传输
+
+服务寻址即所有的函数都有自己的id,这个id是唯一确定的，网络传输大部分是通过 tcp 协议，但其实 UDP 也是可以的
+
+**通信 BIO /NIO /AIO**
 
 
 
