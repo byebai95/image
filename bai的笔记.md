@@ -1,5 +1,3 @@
-# Java 总结
-
 ## 一、基础
 
 ### 1.1 语法
@@ -26,27 +24,149 @@
 
 ### 1.2 集合
 
-#### 1.2.1  Set
+![img](https://www.runoob.com/wp-content/uploads/2014/01/2243690-9cd9c896e0d512ed.gif)
 
-##### 1.2.1.1 HashSet
+####  ArrayList 
 
-##### 1.2.1.2 TreeSet
+ArrayList 是一个数组队列，相当于动态数组，提供了随机访问，支持序列化
 
-##### 1.2.1.3 LinkedHashSet
+默认未指定初始化容量为 10 
 
-#### 1.2.2 List
+**扩容** 
 
-#### 1.2.3 Map
+ArrayList 新增元素都会校验数据是否安全存储，如果插入需要的最小容量小于数组长度，则**进行扩容**   grow 
 
-##### 1.2.3.1 HashMap
+扩容的新的长度为之前容量的 **1.5** 倍 ，最大不能超过 **Integer.MAX_VALUE**
 
-##### 1.2.3.2 TreeMap
+ArrayList 本质还是 Object[] , 扩容的本质是创建一个新长度的数组，将旧的数据拷贝到新的数组
 
-##### 1.2.3.3 HashTable
+```java
+Arrays.copyOf()
+```
 
-#### 1.2.4 java.util.concurrent
+####  LinkedList
 
+LinkedList 是一种**双向循环链表**，内部包含**头指针、尾指针** 。可以通过链表实现队列、栈
 
+```
+push()  等价于  addFirst()
+pop()   等价于  removeFirst()
+poll()  查询并移除第一个元素
+peek()  查询第一个元素
+```
+
+![img](https://images2015.cnblogs.com/blog/249993/201611/249993-20161125134834096-1280829764.jpg)
+
+> 对比 ArrayList 与 LinkedList 
+>
+> 1. ArrayList 提供随机访问，可以快速访问，增删效率较第，需要移动批量数据，LinkedList 不能随机访问，增删效率较高
+> 2. 使用容量LinkedList 较大，每个数据节点都存储2个引用的数据
+
+#### **Vector**
+
+Vector 是 ArrayList 线程安全的容器，但与 ArrayList 不同，可以设置扩容增量
+
+**扩容**
+
+如果未设置增量，则扩容为原本的**2倍**
+
+> vector 增加元素，get 获取元素都使用了 synchronized ，效率低
+>
+> 初始化未指定容量，则默认为 10 ，未指定增量默认为 0
+
+#### HashMap 
+
+HashMap 是一个**散列表**，存储的是键值对 key-value 的映射 
+
+1. HashMap 根据 HashCode 值存储数据，具有很高的访问速度
+2. 允许一条记录的键为 null
+3. 无序，线程不安全
+4. 基本结构**数组+链表**
+
+**散列表**
+
+散列表也叫哈希表，在哈希表中进行添加、查找、删除等操作，性能非常高，在不考虑哈希冲突的情况下，仅需要一次定位即可完成，时间复杂度 O(1)
+
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20181102221702492.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dvc2hpbWF4aWFvMQ==,size_16,color_FFFFFF,t_70)
+
+HashMap 是由数组+链表组成的，数组是HashMap 的主体，链表则是为了解决哈希冲突而存在的。如果定位到的位置不含元素，则查找、添加一次即完成。
+
+如果包含链表，则添加操作的时间复杂度 O(n) ，首先遍历列表，存在即覆盖，否则新增。对于查询，需要逐一通过 key 对象比对查找。考虑到性能，*HashMap*
+
+*中链表出现越少，性能越好*
+
+**存储原理**
+
+几个重要的参数
+
+```java
+/**
+* 加载因子，代表 table 的填充度
+*/
+static final float DEFAULT_LOAD_FACTOR = 0.75f;
+
+/**
+* 默认初始化容量 16
+*/
+static final int DEFAULT_INITIAL_CAPACITY = 1 << 4;
+
+/**
+* 最大容量
+*/
+static final int MAXIMUM_CAPACITY = 1 << 30;
+
+/**
+* 链表转换为树的阈值
+*/
+static final int TREEIFY_THRESHOLD = 8;
+
+/**
+* 树退化为链表的阈值
+*/
+static final int UNTREEIFY_THRESHOLD = 6;
+
+/**
+* 阈值， 阈值 = 容量 * 加载因子
+*/
+int threshold;
+
+/**
+* 链表转换为红黑树的条件，链表节点数大于等于 8 且 数组容量大于等于 64
+*/
+static final int MIN_TREEIFY_CAPACITY = 64;
+```
+
+HashMap 存储的流程
+
+1. 计算该值的 hashCode 
+2. 通过 hashCode 参与位运算得到 hash值
+3. 通过 hash 值与 table 长度获取存储下标
+4. 根据下标确定位置，如果发生哈希冲突，同 equal 判断 key 是否冲突
+
+```java
+static final int hash(Object key) {
+        int h;
+        return (key == null) ? 0 : (h = key.hashCode()) ^ (h >>> 16);
+    }
+```
+
+![HashMap如何确定元素位置](https://img-blog.csdnimg.cn/20181102214046362.png)
+
+> HashMap 中对象是否可以作为 key 存储？
+>
+> 可以，但是必须要重写 equals() 与 hashCode(), 如果不重写，会导致不同的对象（属性参数均相同），获取的值是不一样的。
+>
+> 因为不同的对象的hashCode 是不一样的
+
+**扩容**
+
+HashMap 的容量始终保持是2的幂次方，目的是在 hash 值与 length -1 计算，保在 length -1 的地位全为 1 ，此外也保证在调整链表幅度在小范围内
+
+**jdk 1.8 优化**
+
+在 jdk 1.7 中链表过长会导致效率下降， jdk1.8 在链表超过 8 时，链表转换为红黑树
+
+https://blog.csdn.net/woshimaxiao1/article/details/83661464
 
 ### 1.3 异常
 
@@ -339,7 +459,13 @@ AOF   可以更好的保护数据不丢失，性功高，缺点是文件更大�
 
 ### 5.1 Elasticsearch
 
+下载安装配置
 
+分片、副本
+
+查询
+
+原理聚合
 
 
 
@@ -602,11 +728,15 @@ a=1 and b=2 and c=3
 
 https://tech.meituan.com/2014/06/30/mysql-index.html
 
+
+
+
+
 ## 七、计算机基础
 
+## 八、数据结构与算法
 
-
-
+### 红黑树
 
 ## 九、版本控制
 
