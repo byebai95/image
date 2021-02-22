@@ -420,6 +420,16 @@ rpc 需要关注的三个技术点：
 
 安装：https://www.runoob.com/redis/redis-install.html
 
+历史版本
+
+| 版本号 | 特点                                                         | 时间    |
+| ------ | ------------------------------------------------------------ | ------- |
+| 2.6    | 支持 Lua脚本、去掉虚拟内存功能                               | 2012    |
+| 2.8    | 添加部分主从复制功能、尝试支持ipv6                           | 2013-11 |
+| 3.0    | redis cluster 分布式实现、lru 算法提升、优化小对象内存访问   | 2015-04 |
+| 3.2    | 优化 rdb 、从节点读取过去数据保证一致性                      | 2016-05 |
+| 4.0    | 优化主从切换全量复制、提供新的剔除算法 LFU、提供rdb-aof 混合持久化格式 | 2017    |
+
 #### 5.1.2 基本语法
 
 Redis 支持五种数据类型： string 、hash、list 、set、zset
@@ -517,7 +527,26 @@ AOF   可以更好的保护数据不丢失，性功高，缺点是文件更大�
 
 #### 5.1.6 热点数据淘汰算法
 
+> 当 redis 使用的内存超过设置的最大内存时，会触发redis的key 淘汰机制，在 redis 3.0 中的6种淘汰策略
 
+***redis 淘汰策略***
+
+> 1. noeviction 不删除策略 ，当达到最大内存限制时，如果需要使用更多的内存，则直接返回错误信息（redis 默认策略）
+> 2. allkeys-lru 所有的key中删除最近最少使用（less recently used ， LRU）
+> 3. allkeys-random 所有的keys中随机删除一部分 key
+> 4. volatile-lru 在设置了超时时间的 key 中优先删除最近最少使用的key
+> 5. volatile-random 在设置超时时间的key 中随机删除一部分key
+> 6. volatile-ttl 在设置了超时时间的key中优先删除剩余时间的key
+
+***如何保证 redis 中存放的都是热点数据？***
+
+> 限定 redis 占用内存，redis 会根据自身数据淘汰策略，留下热数据到内存，然后设置淘汰策略为 allkeys-lru 或者 volatile-lru 
+>
+> 设置 redis 最大占用内存： maxmemory 字节数
+>
+> 设置过期策略: maxmemory-policy volatile-lru (默认的淘汰策略 noeviction)
+
+默认端口： 6379
 
 
 
@@ -596,6 +625,76 @@ https://www.elastic.co/guide/cn/elasticsearch/guide/current/mapping-intro.html
 
 kafka 中文官方文档 https://kafka.apachecn.org/intro.html
 
+> kafka 是分布式的、基于发布订阅的消息系统，主要解决***应用解耦、异步消息、流量削峰***
+
+#### **发布订阅模型**
+
+生产者将消息发送到 Topic 中，同时有多个消费者订阅该消息，消费者消费数据后，并不会清除消息，属于一对多模式
+
+![发布订阅模型.png](https://segmentfault.com/img/remote/1460000021175586)
+
+**系统架构**
+
+![系统总架构.png](https://segmentfault.com/img/remote/1460000021175587)
+
+
+
+![preview](https://segmentfault.com/img/remote/1460000021175588/view)
+
+**producer**
+
+消息生产者，将消息 push 到 kafka 集群中的Broker
+
+**consumer**
+
+消息消费者，从kafka 集群中pull 消息，消费消息
+
+**consumer group**
+
+消费者组，每个 consumer 都有一个consumer group .消费者组整体是一个消费者
+
+一个分区只能被组内一个消费者消费
+
+**broker**
+
+一台kafka 服务器就是一个 broker ,一个集群由多个broker组成，每个broker可以容纳多个 topic
+
+**topic**
+
+消息的类别或者主题，逻辑上可以理解为队列，生产者与消费者的中间商
+
+**partition**
+
+负载均衡与扩容性考虑，一个topic可以分为多个Partition ，物理存储在kafka 集群中多个 Broker 上
+
+> 为了提高 kafka 的吞吐量，物理上将 topic 分成一个或多个 partition , partition 在存储层面是 append log 文件，消息 push 进来后，
+>
+> 会被追加到 log 文件的尾部，每条消息在文件中的位置成为 **offset** 偏移量 （**offset** 是一个 long 型数字，唯一标识一条信息）
+
+**replica**
+
+Partition 的副本，为了保证集群中某个节点发生故障时，该节点上的Partition 数据不会丢失，且Kafka仍能继续工作。kafka提供副本机制，
+
+一个topic都有若干个副本，一个 leader 和若干个 follower
+
+**leader**
+
+Replica 的主角，Producer 与 Consumer 只跟 Leader 交互
+
+**follower** 
+
+Replica 的从角，实时从 Leader 中同步数据，保持和 Leader数据的同步。Leader 发送故障时，Follower 会变为新的 Leader
+
+#### kafka 中 NIO 
+
+https://www.jianshu.com/p/a6b9e5342878
+
+
+
+
+
+
+
 
 
 https://segmentfault.com/a/1190000021175583?utm_source=sf-related
@@ -604,7 +703,15 @@ https://segmentfault.com/a/1190000021175583?utm_source=sf-related
 
 ### 5.4 zookeeper
 
+https://www.cnblogs.com/raphael5200/p/5285583.html
 
+znode . zxid ，工作原理 ，数据一致性， paxos 算法
+
+zk 分布式锁
+
+zk 选举
+
+zk 面试
 
 ### 5.5 Dubbo
 
@@ -975,7 +1082,7 @@ https://tech.meituan.com/2014/06/30/mysql-index.html
 
 ## 七、网络
 
-#### 7.1序列化
+#### 序列化
 
 Java 保存内存中各种对象的状态，可以通过序列化实现，然后通过反序列化将其读取
 
@@ -985,7 +1092,7 @@ Java 保存内存中各种对象的状态，可以通过序列化实现，然后
 >
 > 虚拟机是否允许反序列化，不仅取决于类路径与代码，还有是两个类的序列化id 是否一致
 
-#### 7.2 网络协议
+#### 网络协议
 
 ![img](https://images2015.cnblogs.com/blog/983980/201611/983980-20161121173924409-1128983178.png)
 
@@ -999,19 +1106,93 @@ Java 保存内存中各种对象的状态，可以通过序列化实现，然后
 
 物理层：比特流
 
-#### 7.3 TCP/ip 三次握手
+#### NIO BIO AIO
+
+通过一个**烧开水**的案例分析三者的区别
+
+![img](http://hccm.rongsoft.com/upload/img/202009/b22df162c4b54657a9f253dc66b1c2ad.png)
+
+BIO 同步阻塞IO     数据的读取写入必须阻塞在一个线程内完成
+
+NIO 同步非阻塞IO 线程不断轮询查看状态，直到满足条件从而执行下一步操作
+
+AIO 异步非阻塞IO  不用通过轮训查看状态，而是通过回调或通知线程告知状态
+
+> 同步  主动请求数据直到等待io 操作完成  
+>
+> 异步  主动请求数据后处理其他的任务
+>
+> 阻塞   线程等待资源中的数据准备完成，直到返回响应结果
+>
+> 非阻塞 线程直接返回结果，不用等待资源准备才响应
+
+![img](http://hccm.rongsoft.com/upload/img/202009/77556f0fe0a1412bb20c14f0db1b7a03.jpg)
+
+NIO 的优点
+
+> 1. 通过 Channel 注册到 Selector 上的状态来实现客户端与服务端的通信
+> 2. Channel 中数据的读取是通过 Buffer ，一种非阻塞的读取方式
+> 3. Selector 多路复用器单线程模型，线程的资源开销较小
+
+**为什么用 NIO ，传统的 IO 有什么缺陷？**
+
+> 传统的 IO 是一个请求对应一个线程的模式，一旦有高并发的请求，就会出现如下问题
+>
+> 1. 线程不够用，可能无法创建新的线程，导致异常，程序崩溃
+> 2. 阻塞 IO 模式下，会有大量线程被阻塞，一直等待数据，这时大量线程被挂起导致cup利用率低下，系统的吞吐量差
+> 3. 如果网络 IO 阻塞或者故障，线程的阻塞时间可能很长，系统变的不可靠
+
+最直接的提现在服务器与客户端通信时，每加入一台客户端需要等待一个 io 线程阻塞等待对方数据传送，会导致服务器不断的开启新的线程，
+
+但这些大部分都是阻塞中，浪费资源，并且无法支持大并发
+
+**传统IO 流 与 NIO** 
+
+ **IO** 是面向流的、阻塞的, NIO 则是面向块的、非阻塞的
+
+原有的IO流不存在缓存的概念，面向流意味着每次从流中读取一个或多个字节，直至读取所有字节，他们没有被缓存的地方，因为不能移动流中的数据。
+
+传统的IO流是阻塞的，当一个线程调用read 或者 write 方法时，该线程被阻塞/
+
+**NIO** 是面向缓冲区的 ， 数据读取到一个它稍后处理的缓冲区，NIO 是非阻塞模式，使线程从某通道发送请求读取数据，在读取数据之中，该线程可以做
+
+其他的事情。
+
+**NIO 是如何实现的？**
+
+> **buffer**  缓存数组（容量、界限、位置）
+>
+> ![img](https://pic3.zhimg.com/80/v2-0894899e2dc54b8bb2959b0fdbd0be6e_720w.jpg)
+>
+> **channel**    通道
+>
+> 通道可以同时进行读写，流只能读或者只能写
+>
+> 通道可以实现异步读写数据
+>
+> 通道可以从换从读取数据，也可以写数据到缓存
+>
+> ![img](https://pic2.zhimg.com/80/v2-14be9b2fd5d638a20281e72ef557923d_720w.jpg)
+>
+> **selector**  选择器
+>
+> 可以检测多个 NIO channel ,查看读写事件是否就绪
+>
+> 多个 channel 以事件的方式可以注册到同一个 selector ，从而达到用一个线程处理多个请求的可能
+>
+> ![img](https://pic4.zhimg.com/80/v2-092382125d13983b0c91a168e2b35c77_720w.jpg)
+
+
+
+#### TCP/ip 三次握手
+
+https://www.cnblogs.com/bj-mr-li/p/11106390.html
 
 
 
 
 
 
-
-
-
-
-
-**通信 BIO /NIO /AIO**
 
 ## 八、数据结构与算法
 
@@ -1044,3 +1225,49 @@ https://www.cnblogs.com/study-everyday/p/8629100.html
 ## 十二、面试
 
 https://segmentfault.com/a/1190000037612679?utm_source=sf-related
+
+大厂 
+
+1. 阿里巴巴
+2. 腾讯
+3. 字节跳动
+4. 京东
+
+### 阿里巴巴
+
+1. 对象如何进行深拷贝，除了clone
+
+   > 
+
+2. happen-before原则
+
+3. jvm调优的实践
+
+4. 单例对象会被jvm的gc时回收吗
+
+5. redis如果list较大，怎么优化
+
+6. tcp的沾包与半包
+
+7. socket编程相关的一些api和用法
+
+8. 建立和处理连接的是同一个socket吗，socket中两个队列分别是啥
+
+9. 项目中有使用过netty吗
+
+10. TSL1.3新特性
+
+11. AES算法原理
+
+12. redis集群的使用
+
+13. mysql与mogo对比
+
+14. 场景题：设计一个im系统包括群聊单聊
+
+15. 场景题：设计数据库连接池
+
+16. 场景题：秒杀场景的设计
+
+
+
