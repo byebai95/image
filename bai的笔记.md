@@ -277,7 +277,7 @@ https://zhuanlan.zhihu.com/p/29881777
 
 #### 	 锁
 
-
+排他锁，共享锁
 
 
 
@@ -287,7 +287,25 @@ https://zhuanlan.zhihu.com/p/29881777
 
 #### ThreadLocal 了解
 
-### 2.2 Aop
+#### java.util.concurrent 并发包
+
+##### CountDownLatch
+
+##### CyclicBarrier
+
+#### **Reactor模式**
+
+https://www.cnblogs.com/crazymakercircle/p/9833847.html
+
+### 2.2 设计模式
+
+#### 单例
+
+#### 工厂
+
+#### 观察者
+
+#### reactor模式
 
 
 
@@ -303,7 +321,19 @@ https://zhuanlan.zhihu.com/p/29881777
 
 ### 4.1 spring 
 
-Bean 的生命周期
+##### spring 事务
+
+```
+@Transactional
+
+
+```
+
+事务的隔离级别： 默认的，即使用数据库的隔离级别
+
+Propagation  7种
+
+
 
 
 
@@ -548,6 +578,8 @@ AOF   可以更好的保护数据不丢失，性功高，缺点是文件更大�
 
 默认端口： 6379
 
+#### redis 分布式锁
+
 
 
 ### 5.2 Elasticsearch
@@ -689,29 +721,134 @@ Replica 的从角，实时从 Leader 中同步数据，保持和 Leader数据的
 
 https://www.jianshu.com/p/a6b9e5342878
 
+<img src="https://upload-images.jianshu.io/upload_images/4325076-41f7b454a8d7f67b.png?imageMogr2/auto-orient/strip|imageView2/2/format/webp" alt="img"  />
 
-
-
-
-
-
-
+#### **kafka 多线程Reactor**
 
 https://segmentfault.com/a/1190000021175583?utm_source=sf-related
 
-
-
 ### 5.4 zookeeper
 
-https://www.cnblogs.com/raphael5200/p/5285583.html
+zookeeper 是 Apache 软件基金会的一个软件项目，它为大型分布式计算提供开源的**分布式配置服务、同步服务、命名注册**
 
-znode . zxid ，工作原理 ，数据一致性， paxos 算法
+zookeeper 的架构通过冗余服务实现高可用
 
-zk 分布式锁
+#### **数据结构**
 
-zk 选举
+zookeeper 提供的命名空间类似标准文件系统， key-value 的形式存储，名称 key 由斜线 **/** 分割 ，命名空间中的每个节点由一个路径标识
 
-zk 面试
+![img](https://www.runoob.com/wp-content/uploads/2020/09/zknamespace.jpg)
+
+**相关 CAP 理论**
+
+cap 理论支出分布式计算系统，不能同时满足一下三点
+
+1. **一致性 **Consistency
+
+   > 数据在多个副本之间保持一致
+
+2. **可用性 **Availability
+
+   > 每次请求都能获取正确的数据，但不保证是最新的
+
+3. **分区容错性** Partition tolerance
+
+   > 在发生网络故障时，仍然需要保证提供一致性与可用性服务
+
+以上三者只能同时满足2者， p 是必须的，所以有 CP 与 AP 两中，**zookeeper 保证的是 CP ， spring cloud eureka 保证的是 AP**
+
+<img src="https://www.runoob.com/wp-content/uploads/2020/09/cap-theorem-diagram.png" alt="img" style="zoom: 50%;" />
+
+**折中的 BASE 理论**
+
+BASE 是 Basically Available （基本可用），Soft-state(软状态)、Eventually Consistent (最终一致性)
+
+> 基本可用：在分布式系统出现故障，允许损失部分可用性
+>
+> 软状态：允许数据备份节点出现中间状态，延时的最终一致性
+>
+> 最终一致性：数据备份节点经过一段时间达到一致性
+
+#### 集群搭建
+
+![img](https://www.runoob.com/wp-content/uploads/2020/09/clus-01.png)
+
+zoo.cfg 三个端口
+
+> **2181** 对客户端提供服务
+>
+> **2888**  集群内机器通信使用
+>
+> **3888** 选举leader 使用
+
+#### **znode**
+
+zookeeper 所有存储的数据是由 znode 组成，并以 key-value 的形式存储数据，结构类似 Linux 的文件系统（znode 信息如下）
+
+![img](https://www.runoob.com/wp-content/uploads/2020/09/data-model-03.png)
+
+| 属性           | 描述                                                         |
+| :------------- | :----------------------------------------------------------- |
+| cZxid          | 创建节点时的事务ID                                           |
+| ctime          | 创建节点时的时间                                             |
+| mZxid          | 最后修改节点时的事务ID                                       |
+| mtime          | 最后修改节点时的时间                                         |
+| pZxid          | 表示该节点的子节点列表最后一次修改的事务ID，添加子节点或删除子节点就会影响子节点列表，但是修改子节点的数据内容则不影响该ID**（注意，只有子节点列表变更了才会变更pzxid，子节点内容变更不会影响pzxid）** |
+| cversion       | 子节点版本号，子节点每次修改版本号加1                        |
+| dataversion    | 数据版本号，数据每次修改该版本号加1                          |
+| aclversion     | 权限版本号，权限每次修改该版本号加1                          |
+| ephemeralOwner | 创建该临时节点的会话的sessionID。**（\****如果该节点是持久节点，那么这个属性值为0）** |
+| dataLength     | 该节点的数据长度                                             |
+| numChildren    | 该节点拥有子节点的数量**（只统计直接子节点的数量）**         |
+
+####  zookeeper Session 原理
+
+客户端与服务端之间的连接是基于 TCP 长连接的， Client 端连接 server 端的默认端口 2181 ，也就是 session 会话。
+
+**sessionID**
+
+会话id,用来唯一标识一个会话，每次客户端创建会话的时候， zookeeper 都会为其分配一个全局的唯一 sessionId
+
+#### 数据同步流程
+
+在 zookeeper 中，主要依赖 ZAB 协议来实现分布式数据一致性，协议分为两部分
+
+1. 消息广播
+2. 崩溃恢复
+
+**消息广播**
+
+> Zookeeper 使用单一的主进程 Leader 来接受和处理客户端所有事务请求，并采用 ZAB 协议的原子广播协议，将事务请求以 Proposal 提议广播到所有
+>
+> 的 Follower 节点，当集群中有过半的 Follower 服务器进行正确的 ACK 反馈，那么Leader 就会再次向所有的 Follower 服务器发送 commit 消息，将此
+>
+> 次提议进行提交。这个过程简称 2pc 事务提交，Observer 节点只负责同步 leader 数据，不参与 2pc 数据同步过程。
+
+<img src="https://www.runoob.com/wp-content/uploads/2020/09/zk-data-stream-async.png" alt="img" style="zoom: 67%;" />
+
+**奔溃恢复**
+
+一旦Leader服务器出现奔溃，或者由于网络原因导致 Leader 服务器失去了过半 Follower 的通信，那么就会进入奔溃恢复模式，需要选举出一个
+
+新的Leader 服务器，这个过程可能存在两种数据不一致的隐患，需要 ZAB 协议避免
+
+1. Leader 服务器将消息 commit 发出后，立即奔溃
+2. Leader 服务器刚提出 proposal 后，立刻奔溃
+
+ZAB 协议的恢复模式下使用了一下策略
+
+1. 选举zxid最大的节点作为新的leader
+2. 新 leader 将事务日志中尚未提交的消息进行处理
+
+#### Leader 选举原理
+
+
+
+#### 分布式锁实现原理
+
+curator 实现分布式锁
+
+菜鸟教程 https://www.runoob.com/w3cnote/zookeeper-tutorial.html
 
 ### 5.5 Dubbo
 
@@ -1180,19 +1317,49 @@ NIO 的优点
 >
 > 多个 channel 以事件的方式可以注册到同一个 selector ，从而达到用一个线程处理多个请求的可能
 >
+> ![img](http://ifeve.com/wp-content/uploads/2013/06/overview-selectors.png)
+>
 > ![img](https://pic4.zhimg.com/80/v2-092382125d13983b0c91a168e2b35c77_720w.jpg)
 
-
+并发编程网之 NIO: http://ifeve.com/overview/
 
 #### TCP/ip 三次握手
 
+![img](https://img-blog.csdn.net/20180717201939345?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM4OTUwMzE2/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70)
+
+序列号 seq : 占4个字节，用来标记数据端的顺序
+
+确认号 ack : 占4个字节
+
+确认ACK : 占 1 个字节 当 ACK = 1 时确认字段号才有效， ACK = 0 确认号无效
+
+同步 SYN : 建立连接时用于同步序号，只有在建立连接时置为 1 
+
+终止 FIN ： 用来释放一个连接
+
+> ACK SYN FIN 标识标志位，值为 0 或者 1
+
+**三次握手**
+
+![img](https://img-blog.csdn.net/20180717202520531?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM4OTUwMzE2/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70)
+
+> 
+
+**四次挥手**
+
+![img](https://img-blog.csdn.net/20180717204202563?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM4OTUwMzE2/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70)
+
+***为什么建立连接需要三次，关闭连接需要四次？***
+
+***为什么 TIME_WAITE 状态需要经过2MSL (msg 最大包文生存时间) 才进入 close 状态?***
+
+***为什么不能用2次握手建立连接？***
+
+***如果已经建立连接，客户端故障则么办？***
+
+
+
 https://www.cnblogs.com/bj-mr-li/p/11106390.html
-
-
-
-
-
-
 
 ## 八、数据结构与算法
 
@@ -1241,33 +1408,22 @@ https://segmentfault.com/a/1190000037612679?utm_source=sf-related
 
 2. happen-before原则
 
-3. jvm调优的实践
 
-4. 单例对象会被jvm的gc时回收吗
 
-5. redis如果list较大，怎么优化
-
-6. tcp的沾包与半包
-
-7. socket编程相关的一些api和用法
-
-8. 建立和处理连接的是同一个socket吗，socket中两个队列分别是啥
-
-9. 项目中有使用过netty吗
-
-10. TSL1.3新特性
-
-11. AES算法原理
-
-12. redis集群的使用
-
-13. mysql与mogo对比
-
-14. 场景题：设计一个im系统包括群聊单聊
-
-15. 场景题：设计数据库连接池
-
-16. 场景题：秒杀场景的设计
+1. jvm调优的实践
+2. 单例对象会被jvm的gc时回收吗
+3. redis如果list较大，怎么优化
+4. tcp的沾包与半包
+5. socket编程相关的一些api和用法
+6. 建立和处理连接的是同一个socket吗，socket中两个队列分别是啥
+7. 项目中有使用过netty吗
+8. TSL1.3新特性
+9. AES算法原理
+10. redis集群的使用
+11. mysql与mogo对比
+12. 场景题：设计一个im系统包括群聊单聊
+13. 场景题：设计数据库连接池
+14. 场景题：秒杀场景的设计
 
 
 
