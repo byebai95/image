@@ -252,13 +252,69 @@ xmn xms xmx 栈深度设置   OOM 发生的情况  xoss
 
 #### 垃圾收集器
 
+Java **判断哪些对象需要被回收**
 
+1. 引用计数算法
+2. 可达性分析算法
+
+引用计数算法即将对象添加一个引用计数器，无法解决对象循环引用的问题。
+
+可达性分析算法将通过一系列 GC roots 的对象为起点，，不可达的对象将被回收
+
+1. 虚拟机栈中引用的对象
+2. 方法区类静态属性引用的对象
+3. 方法区常量引用的对象
+4. 方法区栈 jni 引用的对象
+
+> Java 引用分为：强引用，软引用，弱引用，虚引用
+
+**垃圾回收算法**
+
+1. 标记清除算法
+2. 复制算法
+3. 标记整理算法
+
+**内存分配策略与回收策略**
+
+> 对象优先在 Eden 区分配
+>
+> 大对象直接进入老年代
+>
+> 长期存活的对象进入老年代
+>
+> 空间分配担保
 
 #### 类文件结构
+
+对象结构
+
+> markword , 实例信息，对齐填充
 
 
 
 #### 类加载机制
+
+> jvm 将 class 文件字节码加载到内存，并将静态数据转换成方法区中运行时数据结构
+>
+> 类加载机制分为五个部分： 加载、验证、准备、解析、初始化 
+
+![img](https://upload-images.jianshu.io/upload_images/13202633-3cb11d1712a9efc9.png?imageMogr2/auto-orient/strip|imageView2/2/w/739/format/webp)
+
+> ASM 字节码处理工具，可以动态的操作字节码
+>
+> 加载： 通过类的全限定名获取类的二进制字节流，并生成 Java.lang.Class 对象
+>
+> 验证： 文件格式验证，元数据验证，字节码验证，符号引用验证
+>
+> 准备： 为类变量分配内存，并初始化为默认值
+>
+> 解析:   把类中的符号引用转换为直接引用
+>
+> 初始化
+
+**双亲委派机制**
+
+![img](https://upload-images.jianshu.io/upload_images/13202633-4c819649aebff4df.png?imageMogr2/auto-orient/strip|imageView2/2/w/590/format/webp)
 
 
 
@@ -280,7 +336,7 @@ xmn xms xmx 栈深度设置   OOM 发生的情况  xoss
 >
 > Java 内存模型规定所有的变量都存储在主内存（Main Memory）中
 
-![image-20210226102500245](C:\Users\Admin\AppData\Roaming\Typora\typora-user-images\image-20210226102500245.png)
+![image-20210226102500245](https://raw.githubusercontent.com/byebai95/image/main/typora/image-20210226102500245.png)
 
 > 除了增加高速缓存外，为了处理器内部的运算能够被充分利用，处理器可能对输入的代码进行乱序执行优化，处理器在计算后将乱序执行的结果重组，保证
 >
@@ -296,21 +352,55 @@ xmn xms xmx 栈深度设置   OOM 发生的情况  xoss
 >
 > 线程之间的变量交互通过主内存完成
 
-![image-20210226103957035](C:\Users\Admin\AppData\Roaming\Typora\typora-user-images\image-20210226103957035.png)
+![image-20210226103957035](https://raw.githubusercontent.com/byebai95/image/main/typora/image-20210226103957035.png)
 
-内存间交互操作
+##### 内存间交互操作
 
-https://raw.githubusercontent.com/byebai95/image/main/springboot-schedule-job-image/1.png
+> Jvm 主内存与工作内存之间的具体交互协议，即变量在主内存与工作内存之间的拷贝，Java 通过定义8种操作完成
+>
+> **lock** ： 锁定，作用于主内存变量，将一个变量标识为线程独占状态
+>
+> **unlock**： 解锁，作用主内存变量，将锁定状态的变量释放，其他线程才可以进行锁定
+>
+> **read** ： 读取，作用主内存的变量，将主内存的变量值传输到线程工作内存
+>
+> **load** ： 载入，作用工作内存，将 read 读取到主内存的值存入工作内存变量副本中
+>
+> **use** ： 使用，作用工作内存，将工作内存的变量值传递给执行引擎
+>
+> **assign** ： 赋值，作用工作内存的变量，将执行引擎传递的值赋给工作内存的变量
+>
+> **store** ： 存储，作用工作内存的变量，将工作内存的变量传递到主内存中
+>
+> **write ** ： 写入，作用主内存变量，将 store 传递的值放入主内存变量中
 
-##### Happen-before
+##### 原子性、可见性、有序性
+
+> **原子性 Atomicity**
+>
+> synchronized 块操作具备原子性
+>
+> lock 与 unlock ，本质是 moniterenter 与 moniterexit 隐式的操作，也具备原子性
+>
+> **可见性 Visibility**
+>
+> volatile 保证变量的可见性，即新值能立即同步到主内存，以及每次使用前立即从主内存刷新
+>
+> synchronized 与 final 也能够实现可见性， synchronized 解锁前先将变量刷新到主内存
+>
+> **有序性 Ordering**
+>
+> volatile 禁止指令重排序 ，synchronized 的有序性是保证串行执行
+
+**先行发生原则 Happens-Before**
+
+> 判断数据是否存在竞争，线程是否安全
+
+https://raw.githubusercontent.com/byebai95/image/main/typora/image-20210226102500245.png
 
 https://www.javazhiyin.com/857.html
 
 https://zhuanlan.zhihu.com/p/29881777
-
-#### 线程安全与锁优化
-
-
 
 #### JVM 调优
 
@@ -589,6 +679,20 @@ https://blog.csdn.net/u013262534/article/details/81676657
 
 #### CAS 失败重试
 
+
+
+#### 锁优化
+
+自旋锁与自适应自旋
+
+锁消除
+
+锁粗花
+
+轻量级锁
+
+偏向锁
+
 https://www.cnblogs.com/crazymakercircle/p/9833847.html
 
 ### 2.2 设计模式
@@ -600,8 +704,6 @@ https://www.cnblogs.com/crazymakercircle/p/9833847.html
 #### 观察者
 
 #### reactor模式
-
-#### 
 
 
 
@@ -1785,7 +1887,62 @@ https://www.cnblogs.com/bj-mr-li/p/11106390.html
 
 ## 八、数据结构与算法
 
-### 时间复杂度分析
+**1.输入两个正整数 n 与 m ，求最大公约数与最小公倍数**
+
+```java
+    public static int getGenericCommonNumber(int x, int y){
+        int n = y;
+        while( x%y != 0 ){
+            n = x%y;
+            x = y;
+            y = n;
+        }
+        return n;
+    }
+```
+
+> 辗转相除法求最大公约数
+>
+> x * y = 最大公约数 * 最小公倍数
+
+```java
+    public static int getLCM(int x ,int y){
+        int n = getGenericCommonNumber(x,y);
+        return x*y/n;
+    }
+```
+
+**2.判断2个字符串是否存在包含，是返回第一次出现下标，不是返回-1**
+
+```java
+    /**
+     * 判断两个字符串是否为字串，是返回下标，不是返回 -1
+     */
+    public static int getSubStr(String s1,String s2){
+        return s1.length() > s2.length() ? s1.indexOf(s2) : s2.indexOf(s1);
+    }
+```
+
+自己实现 indexof 同款方法
+
+```java
+public static int getIndex(String s1,String s2){
+        char[] c1 = s1.toCharArray();
+        char[] c2 = s2.toCharArray();
+        int i =0 , j = 0;
+        for(;i <= c1.length - c2.length;i++){
+            for(j = 0;j<c2.length;j++){
+                if(c1[i+j]!=c2[j]) {
+                    break;
+                }
+            }
+            if(c2.length == j){
+                return i;
+            }
+        }
+       return -1;
+    }
+```
 
 ### 分治、二分、贪心
 
@@ -1833,41 +1990,118 @@ https://www.pianshen.com/article/25281968288/
 
 https://www.cnblogs.com/study-everyday/p/8629100.html
 
-## 十二、面试
+## 十二、总结
 
 https://segmentfault.com/a/1190000037612679?utm_source=sf-related
 
-大厂 
 
-1. 阿里巴巴
-2. 腾讯
-3. 字节跳动
-4. 京东
-
-### 阿里巴巴
 
 1. 对象如何进行深拷贝，除了clone
 
-   > 
+   > Java 中拷贝分为深拷贝与浅拷贝 ，浅拷贝是拷贝源对象的地址，所以源对象的值发生变化，拷贝对象也发生变化。
+   >
+   > 深拷贝是将源对象所有的值进行拷贝，重新生成一个新的对象，所以源对象与拷贝对象的值并不会互相影响。
+   >
+   > 实现深拷贝的方式：
+   >
+   > 1. 实现Cloneable 接口，并重写 clone 方法，在方法中创建进行赋值
+   > 2.  使用构造函数实现深拷贝，通过构造函数创建新的对象
+   > 3. 序列化实现深拷贝，此种方式有多种实现，有 Gson 序列化，JackSon 等
 
 2. happen-before原则
 
-   
+   > happeen-before 是  Java 内存模型中一个核心的概念 ，Java 内存模式在多线程的场景下，所有的变量都存储在主内存中，每个线程都有自己的
+   >
+   > 工作内存，线程对变量的修改都是在工作内存中，最后刷新到主内存。
+   >
+   > happen-before   a 线程 happen-before b 线程，那么 a 线程中写的结果 b 线程是可以立即知道的 ，即前者的结果被后者可以立即可见
+   >
+   > a 线序 i = 1 , b 线程可以立即知道  b = i (此时 i = 1 )
 
-1. jvm调优的实践
-2. 单例对象会被jvm的gc时回收吗
-3. redis如果list较大，怎么优化
-4. tcp的沾包与半包
-5. socket编程相关的一些api和用法
-6. 建立和处理连接的是同一个socket吗，socket中两个队列分别是啥
+3. jvm调优的实践
+
+   > JvisualVM 可以查看本地或远程 jvm 运气情况
+   >
+   > -Xms ，-Xmx 设置 jvm 堆的初始大小和最大值
+   >
+   > jstat 查看堆内存使用情况
+   >
+   > jstat -gc 垃圾回收统计
+   >
+   > jmap  内存使用情况，对内存溢出分析与定位
+   >
+   > jhat 分析 dump 文件，内存发生溢出时，给内存生成一个 dump 文件
+
+4. 单例对象会被jvm的gc时回收吗
+
+   >  jvm 中判断对象是否应该被回收是通过可达性分析判断改对象是否可达，判断是否可达通过一系列根节点 gc  root 。
+   >
+   > 可以作为 gc root 的包括
+   >
+   > 1. 虚拟机栈中引用的对象
+   > 2. 方法区中常量引用的对象
+   > 3. **方法区中静态属性引用的对象**
+   > 4. 本地方法栈中 jni 的引用的对象
+   >
+   > 单例对象是方法区静态属性引用的对象，是可达的，所以不会被回收。
+   >
+   > **什么情况下单例会被回收？**
+   >
+   > 对象被回收需要满足以下条件
+   >
+   > 1. **改类的所有实例都被回收**
+   > 2. 加载改类的 ClassLoader 被回收
+   > 3. 改类对应的 java.lang.Class 对象没有被引用，无法通过反射获取类的方法
+   >
+   > 单例无法满足第一条，因此单例类不会被卸载
+
+5. redis如果list较大，怎么优化
+
+   > 采用分片
+   >
+   > redids  list 可以存储 2*32 个 key , 单个 String value 可以存储 512M
+
+6. tcp的沾包与半包
+
+   > tcp 传输是面向数据流的，在发送与接受的缓冲区中，可能发生沾包，即将2个包一起发送或者接受
+   >
+   > udp 不会发生，因为udp 是面向数据包的，包之间有明显的边界
+
 7. 项目中有使用过netty吗
+
+   > JBoss 做的一个 jar 包， 快速的开发高性能，高可靠性的网络服务器与客户端程序
+   >
+   > 提供异步的，事件驱动的网络应用程序框架和工具
+
 8. TSL1.3新特性
+
+   > TLS1.3 是一种新的加密协议，它能提高各地互联网用户的发访问速度，又增强安全性
+   >
+   > TLS  把使用互联网安全通信的基础性技术称为传输层安全协议， TLS 是安全套接层 SSL 的进化版本
+
 9. AES算法原理
+
+   > https://blog.csdn.net/gulang03/article/details/81175854
+
 10. redis集群的使用
+
 11. mysql与mogo对比
+
 12. 场景题：设计一个im系统包括群聊单聊
+
 13. 场景题：设计数据库连接池
+
 14. 场景题：秒杀场景的设计
 
+> https://www.cnblogs.com/ilovejaney/p/13924895.html
+>
+> https://www.jianshu.com/p/d789ea15d060
 
+联网 ip :
+
+> 113.96.230.240:8000
+>
+> 192.168.2.255:8235
+>
+> 192.168.1.250
 
